@@ -9,40 +9,51 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium_authenticated_proxy import SeleniumAuthenticatedProxy
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
 from loguru import logger
 
 
 class Client:
     @staticmethod
-    def setup_driver():
-        user_agent = UserAgent().random
+    def read_proxies_from_file(file_path: str) -> list:
+        proxies = []
+        with open(file_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line:  
+                    proxies.append(line)
+        return proxies
 
-        options = Options()
+    @staticmethod
+    def setup_driver(user_agent, proxy: str = None) -> webdriver:
+        options = webdriver.ChromeOptions()
         options.add_argument("--headless")
         options.add_argument('--disable-blink-features=AutomationControlled')
-        options.add_argument(f'user-agent={user_agent}')
-        options.add_argument('--disable-extensions')
         options.add_argument('--disable-gpu')
         options.add_argument('--no-sandbox')
-        options.add_argument('--ignore-certificate-errors')
         options.add_argument('--ignore-ssl-errors')
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument("--disable-proxy-certificate-handler")
+        options.add_argument("--disable-content-security-policy")
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_experimental_option('useAutomationExtension', False)
-
+        if proxy:
+            proxy_helper = SeleniumAuthenticatedProxy(proxy_url=proxy)
+            proxy_helper.enrich_chrome_options(options)
         service = Service(ChromeDriverManager().install())
 
         driver = webdriver.Chrome(service=service, options=options)
         driver.execute_cdp_cmd('Network.setUserAgentOverride', {"userAgent": user_agent})
+        driver.implicitly_wait(20)
 
         return driver
     
     @staticmethod
     def get_table_data(driver: webdriver) -> list:
-        wait = WebDriverWait(driver, 60)
-        table = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "sc-cOifOu")))
+        wait = WebDriverWait(driver, 120)
+        table = wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="root"]/div/div/div/div[2]/div[2]/div')))
         table_html = table.get_attribute('outerHTML')
     
         soup = BeautifulSoup(table_html, 'html.parser')
@@ -79,10 +90,10 @@ class Client:
     def get_data_with_retry(driver: webdriver, max_attempts=3) -> list | None:
         for attempt in range(max_attempts):
             driver.refresh()
+            b = random.randint(5, 12)
+            time.sleep(b)
             data = Client.get_table_data(driver)
             if data:
                 return data
             logger.warning(f"Попытка {attempt + 1} не удалась. Повторное обновление страницы...")
-            b = random.randint(5, 12)
-            time.sleep(b)
         return None

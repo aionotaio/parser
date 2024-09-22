@@ -10,33 +10,41 @@
 
 ## Запуск
 
-Python version: 3.10+
+- Версия Python: 3.10+
 
-Installing virtual env: \
+- Установка: \
 `pip install virtualenv` \
 `cd <project_dir>` \
 `python -m venv venv`
 
 
-Activating: 
- - Mac/Linux - `source venv/bin/activate` 
- - Windows - `.\venv\Scripts\activate` 
+- Активация: 
+    - Mac/Linux - `source venv/bin/activate` 
+    - Windows - `.\venv\Scripts\activate` 
 
-Installing all dependencies: \
+- Установка зависимостей: \
 `pip install -r requirements.txt`
 
-Run main script: \
+- Добавление прокси (обязательно):
+    - **Куда вставлять прокси?**
+    - В файл `.\files\proxies.txt`, HTTP-прокси в формате `username:password@ip:port`. 1 строка - 1 прокси.
+
+- Запуск скрипта: \
 `python main.py`
 
+- Выход из скрипта: \
+`CTRL + C`
 ## config.py
 - `LOGS_DIR` - директория с лог-файлом
 - `LOGS_PATH` - прямой путь к лог-файлу
 - `RES_DIR` - директория с результатами
 - `RES_PATH` - прямой путь к результатам
+- `FILES_DIR` - директория с нужными для запуска файлами (такими как прокси)
+- `PROXY_PATH` - прямой путь к файлу с прокси
 
 - `SLEEP_DELAY` - задержка от первого значения и до второго значения в секундах между повторными запросами к таблице
 - `MAX_ATTEMPTS` - кол-во попыток для повторного запроса при ошибке
 
 ## Результаты
-`logs/logs.txt` - Логи \
-`./data.csv` - CSV с записанными данными
+- `logs/logs.txt` - Логи
+- `./data.csv` - CSV с записанными данными

@@ -2,16 +2,16 @@ import time
 import random
 
 from loguru import logger
+from fake_useragent import UserAgent
 
 from src.client import Client
-from config import LOGS_PATH, RES_PATH, SLEEP_DELAY, MAX_ATTEMPTS
+from config import LOGS_PATH, RES_PATH, PROXY_PATH, SLEEP_DELAY, MAX_ATTEMPTS
 
 
 logger.add(LOGS_PATH, format='{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}', rotation="100 MB")
 
 def main():
     logger.info("Скрипт начинает работу...")
-    driver = Client.setup_driver()
     url = 'https://www.winamax.es/challenges/expresso/16-25/'
     driver.get(url)
 
@@ -47,4 +47,17 @@ def main():
         driver.quit()
 
 if __name__ == "__main__":
-    main()
+    user_agent = UserAgent().random
+    proxies = Client.read_proxies_from_file(PROXY_PATH)
+
+    if not proxies:
+        logger.warning(f"Прокси не указаны. Продолжаю работу без них...")
+        driver = Client.setup_driver(user_agent=user_agent)
+        main()
+    else:
+        for proxy in proxies:
+            proxy_parts = proxy.split(':')
+            if len(proxy_parts) == 3:
+                proxy_with_auth = f'http://{proxy_parts[0]}:{proxy_parts[1]}:{proxy_parts[2]}'
+                driver = Client.setup_driver(user_agent=user_agent, proxy=proxy_with_auth)
+                main()

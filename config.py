@@ -14,5 +14,8 @@ LOGS_PATH = os.path.join(LOGS_DIR, 'logs.txt')
 RES_DIR = os.path.join(ROOT_DIR, 'results')
 RES_PATH = os.path.join(RES_DIR, 'data.csv')
 
+FILES_DIR = os.path.join(ROOT_DIR, 'files')
+PROXY_PATH = os.path.join(FILES_DIR, 'proxies.txt')
+
 SLEEP_DELAY = [50, 80] 
 MAX_ATTEMPTS = 3 
